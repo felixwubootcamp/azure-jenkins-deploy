@@ -8,16 +8,28 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'Environment', choices: ['dev', 'prod'], description: 'Choose environment to deploy')
+        choice(
+            name: 'Environment',
+            choices: ['dev', 'prod'],
+            description: 'Select the environment to deploy'
+        )
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                checkout scm
+            }
+        }
+
         stage('Azure Deployment') {
             steps {
                 dir('scripts') {
-                    pwsh '''
-                        ./deploy.ps1 -Environment ${env.Environment}
-                    '''
+                    echo "Running deployment script..."
+                    pwsh """
+                        ./deploy.ps1 -Environment ${params.Environment}
+                    """
                 }
             }
         }
@@ -25,10 +37,10 @@ pipeline {
 
     post {
         success {
-            echo "Deployment succeeded."
+            echo 'Deployment succeeded.'
         }
         failure {
-            echo "Deployment failed."
+            echo 'Deployment failed.'
         }
     }
 }
